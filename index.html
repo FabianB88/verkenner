@@ -580,6 +580,31 @@ function render(){
   updateLive(); checkEvents();
 }
 
+/* ---------- App installeren ---------- */
+var installEvt=null;
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();installEvt=e;updInstall();});
+window.addEventListener('appinstalled',function(){installEvt=null;updInstall();});
+function isStandalone(){return (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;}
+function isIOS(){return /iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);}
+function updInstall(){
+  var box=$('installBox'); if(!box)return;
+  if(isStandalone()){box.innerHTML='';box.hidden=true;return;}
+  box.hidden=false;
+  var h='<p class="eyebrow">Zet de app op je telefoon</p>';
+  if(installEvt){
+    h+='<div class="row"><button class="btn" id="installBtn" type="button">Installeer de app</button></div>'+
+       '<p class="dim" style="font-size:14px">Daarna staat De Verkenner tussen je apps en werkt hij ook zonder bereik.</p>';
+  }else if(isIOS()){
+    h+='<p class="dim" style="font-size:14.5px">Open deze pagina in <strong>Safari</strong>. Tik onderin op <strong>Deel</strong> (het vierkantje met de pijl omhoog), scrol omlaag en kies <strong>Zet op beginscherm</strong>.</p>';
+  }else{
+    h+='<p class="dim" style="font-size:14.5px">Open deze pagina in <strong>Chrome</strong>, tik op het menu <strong>⋮</strong> rechtsboven en kies <strong>App installeren</strong> of <strong>Toevoegen aan startscherm</strong>.</p>'+
+       '<p class="dim" style="font-size:14px">Zegt Chrome dat hij al geïnstalleerd is? Zoek tussen je apps naar <strong>Steckenberg</strong>, of gebruik hem gewoon hier in de browser: alles werkt ook zo.</p>';
+  }
+  box.innerHTML=h;
+  var b=$('installBtn');
+  if(b)b.onclick=function(){var e=installEvt;installEvt=null;e.prompt();e.userChoice.then(function(){updInstall();},function(){updInstall();});};
+}
+
 function liveToggle(){return geo.on?'':'<button class="btn" id="liveOn" type="button">Live kompas en geluid aan</button>';}
 function wireLiveToggle(){var b=$('liveOn');if(b)b.onclick=function(){startLive();b.remove();};}
 
@@ -592,6 +617,7 @@ function renderStart(){
     '<h1 style="margin-top:10px">De Verkenner van de Steckenberg</h1>'+
     '<p class="sub">Voor twee, op Allerheiligenavond. Start en finale aan de Stekkenberg.</p></section>'+
   '<div class="stack">'+
+    '<div class="block" id="installBox" hidden></div>'+
     '<div class="prose">'+
       '<p class="dateline">Groesbeek, Allerheiligenavond 1919.</p>'+
       '<p>De oorlog is een jaar voorbij, maar aan de grens is niets voorbij. In Duitsland is alles op: boter, zeep, tabak, garen. Op de Steckenberg laten mensen hun ambacht liggen, want één nacht met een <em>pungel</em> op je nek levert meer op dan een week bezems binden op de hei.</p>'+
@@ -626,7 +652,7 @@ function renderStart(){
       '<div class="row"><button class="btn ghost small" id="wake" type="button">Scherm aan houden</button><span class="dim" id="wakeMsg" style="font-size:14px"></span></div>'+
     '</div>'+
   '</div>';
-  wireLiveToggle();
+  wireLiveToggle(); updInstall();
   $('go').onclick=function(){
     ac();
     if(!cont){state.pos='leg';state.i=0;}else{state.pos=state.resumePos||'leg';}
