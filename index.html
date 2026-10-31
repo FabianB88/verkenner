@@ -224,6 +224,7 @@ var STATIONS = [
   lat:51.7850633, lng:5.91739,
   leg:'Loop naar de bosrand in het noordwesten. De trap van de Koekeleklef ligt bij de ingang van het Avonturenbos, aan de straat die ook Koekeleklef heet. Hier liep Driek het donker in.',
   events:[
+    {at:0.15, fx:'drone', title:'Mie', text:['Mie woonde hier, een paar huizen verderop. Ze zei later dat Driek die week anders was.','Hij keek niet naar haar gezicht als ze praatte. Hij keek naar haar handen.','Ze vond het vreemd. Ze vroeg er niet naar. Dat heeft ze zichzelf nooit vergeven.']},
     {at:0.45, fx:'heartbeat', title:'Niet omkijken', text:['Vanaf jullie voordeur loopt er iemand mee. Op dezelfde afstand. In hetzelfde tempo.','Kijk niet om. Kijk naar de ramen die jullie passeren en tel de ramen waar een kaars of lichtje brandt.','Onthoud dat getal. Hij telt ook.']}
   ],
   arrive:[
@@ -302,7 +303,9 @@ var STATIONS = [
   lat:51.7786711, lng:5.9311787,
   leg:'Loop naar het noordoosten, het dorp in, naar de Protestantse kerk aan de Kerkstraat. Bij de kerk ontspringt de beek waar Groesbeek naar heet.',
   events:[
-    {at:0.4, fx:'knock', title:'Kommies in het dorp', text:['In 1919 hield de grenswacht ook in het dorp mensen staande. Wie buiten liep met een zak, werd gefouilleerd.','Fluisterspel tot de kerk: vertel elkaar wat jij in een pungel zou smokkelen als je alles kon meenemen. Eén ding. Het mag niet van geld zijn.']}
+    {at:0.15, fx:'drone', title:'In Kranenburg', text:['Die week was Driek in Kranenburg gezien. Niet bij de boer, niet bij de herberg. In een smal winkeltje waar een smokkelaar niets te zoeken had.','Hij kwam naar buiten met lege handen en een rood hoofd, zei de vrouw die het zag. Hij liep snel weg, alsof hij iets gestolen had.','Hij had niets gestolen. Hij had iets besteld.']},
+    {at:0.4, fx:'knock', title:'Kommies in het dorp', text:['In 1919 hield de grenswacht ook in het dorp mensen staande. Wie buiten liep met een zak, werd gefouilleerd.','Fluisterspel tot de kerk: vertel elkaar wat jij in een pungel zou smokkelen als je alles kon meenemen. Eén ding. Het mag niet van geld zijn.']},
+    {at:0.8, fx:'heartbeat', title:'Onder de straat', text:['Ergens onder jullie voeten loopt water. Het dorp is erop gebouwd, en het houdt nooit op met lopen.','Mie zei dat je Driek kon horen aankomen als je goed luisterde. Niet zijn voeten. Zijn adem, die hij te lang inhield.','Houd allebei je adem in tot de volgende lantaarnpaal. Wie het eerst moet ademen, hoort wat Mie hoorde.']}
   ],
   arrive:[
     'Hier begint alles. Het water, de naam, het dorp.',
@@ -327,7 +330,9 @@ var STATIONS = [
   lat:51.7840347, lng:5.9344205,
   leg:'Loop naar het noord-noordoosten, naar Hotel-Restaurant De Oude Molen aan de Molenweg. Op die plek stond ooit de Noordmolen. Jullie volgen nu de natte voetstappen.',
   events:[
-    {at:0.5, fx:'heartbeat', title:'De voetstappen houden op', text:['Ongeveer hier hielden ze op. Midden op straat, zonder reden.','Stop allebei op dezelfde tegel. Doe je ogen dicht en tel tot tien.','Wie het eerst zijn ogen opendoet, moet de rest van de weg vooroplopen.']}
+    {at:0.2, fx:'drone', title:'Elke avond minder', text:['Driek spaarde een jaar lang. Elke avond telde hij zijn Marken op de keukentafel, zei zijn moeder later. Elke avond was het dezelfde stapel.','En elke avond kon je er minder voor kopen.','Op een avond hield hij op met tellen. Hij stopte alles in één envelop en zei: nu, of nooit.']},
+    {at:0.5, fx:'heartbeat', title:'De voetstappen houden op', text:['Ongeveer hier hielden ze op. Midden op straat, zonder reden.','Stop allebei op dezelfde tegel. Doe je ogen dicht en tel tot tien.','Wie het eerst zijn ogen opendoet, moet de rest van de weg vooroplopen.']},
+    {at:0.85, fx:'knock', title:'De molenaar', text:['De molenaar zag die nacht twee lichtjes over de hei gaan. Eén voorop, één erachter. Het voorste ging uit. Het achterste liep door.','Hij heeft nooit gezegd wie het achterste lichtje droeg.','Kijk achter je. Hoeveel lichtjes zie jij?']}
   ],
   arrive:[
     'Hier stond de Noordmolen. Vanaf zijn stelling zag de molenaar het hele dorp, en verder: de weg naar Wyler, de weg naar de grens.',
@@ -348,19 +353,20 @@ var STATIONS = [
   extra:'De Oude Molen is vanavond ook tot middernacht open.'
 },
 {
-  id:'hesel', short:'Heselenberg', title:'De dodenakker op de Heselenberg', place:'Begraafplaats Heselenberg, bij het hek',
-  lat:51.7809106, lng:5.9234833,
-  leg:'Loop terug naar het westen, naar de Heselenberg: de heuvel met de begraafplaats, vlak bij jullie straat. Blijf straks buiten het hek.',
+  id:'hesel', short:'Heselenberg', title:'De lantaarn op de Heselenberg', place:'Schrouwenberg, op de flank van de Heselenberg',
+  lat:51.78124, lng:5.92542,
+  leg:'Loop terug naar het westen, naar de Heselenberg: de heuvel vlak bij jullie straat. Jullie stoppen aan de Schrouwenberg, op de weg. De begraafplaats ligt verderop achter de huizen; daar hoeven jullie niet heen.',
   events:[
+    {at:0.15, fx:'drone', title:'Wie verraadde hem?', text:['Fluisterspel tot de heuvel: wie heeft Driek verraden, denken jullie? Een kommies, een buurman, de molenaar, Mie zelf?','Kies allebei één antwoord en zeg het niet hardop.','Op de Heselenberg hoor je of je gelijk had.']},
     {at:0.35, fx:'knock', title:'Drie tikken', text:['Drie tikken. Achter jullie.','Lampen uit. Tien tellen stilstaan. Niet omdraaien.','De wieken stonden in rouwstand. Iemand weet dat jullie komen.']},
-    {at:0.75, fx:'drone', title:'Iemand wacht', text:['Bij het hek van de begraafplaats staat iemand met een lantaarn. Al honderd jaar, op deze avond.','Loop het laatste stuk zonder lamp, als het veilig kan.']}
+    {at:0.75, fx:'drone', title:'Iemand wacht', text:['Ergens op de heuvel staat iemand met een lantaarn. Al honderd jaar, op deze avond.','Loop het laatste stuk zonder lamp, als het veilig kan.']}
   ],
   arrive:[
-    'Op Allerheiligen branden hier lichtjes. Zo gaat dat in een katholiek dorp: je zoekt je doden op en je laat ze niet in het donker zitten.',
-    'Voor Driek was er geen graf. Er is nooit iets gevonden. Dus kwam Mie elk jaar op deze avond naar de Heselenberg, met een stormlantaarn, en ging bij het hek staan. Niet met haar gezicht naar de graven, maar naar het bos.',
+    'Boven op deze heuvel ligt de dodenakker. Op Allerheiligen branden daar lichtjes. Zo gaat dat in een katholiek dorp: je zoekt je doden op en je laat ze niet in het donker zitten.',
+    'Voor Driek was er geen graf. Er is nooit iets gevonden. Dus kwam Mie elk jaar op deze avond naar de Heselenberg, met een stormlantaarn. Niet naar de graven: ze bleef hier op de weg staan, met haar gezicht naar het bos.',
     'Ze heeft het nooit hardop gezegd. Maar iedereen op de Steckenberg wist wie Driek verraden had. Geen kommies, geen buurman. Iets wat elke smokkelaar haatte als het rond was, en zegende als het weg was.'
   ],
-  field:'Blijf buiten het hek; het is na zonsondergang. Ga met je rug naar de graven staan en kijk naar het bos waar jullie vandaan kwamen. Zie je ergens een licht? Weet je zeker van niet?',
+  field:'Ga hier op de weg staan, zoals Mie, en kijk naar het westen: naar het bos waar jullie vandaan kwamen. Zie je ergens een licht? Weet je zeker van niet?',
   puzzle:{type:'text',
     prompt:'Rond was ik een verrader. Verdwenen was ik een vriend. Achter de wolken redde ik meer smokkelaars dan alle verkenners samen.',
     question:'Wat verraadde de Vos?', answers:['MAAN','DEMAAN','MAANLICHT','VOLLEMAAN'],
@@ -375,6 +381,7 @@ var STATIONS = [
 ];
 
 var HOME_EVENTS = [
+  {at:0.2, fx:'drone', title:'Tel opnieuw', text:['Weten jullie het getal nog? De ramen met een kaars of lichtje, op weg naar de trap.','Tel ze nu opnieuw, op dit laatste stuk.','Zijn het er meer geworden? Iemand in deze straat weet nog altijd waarom.']},
   {at:0.5, fx:'heartbeat', title:'Vlak voor jullie', text:['Hij loopt nu vlak voor jullie. Voor het eerst niet ver vooruit.','Kijk bij thuiskomst eerst naar jullie raam, voordat je de deur opendoet.','Doe binnen het licht nog niet aan.']}
 ];
 
@@ -948,7 +955,12 @@ var lock=null;
 function wireWake(){var b=$('wake');if(!b)return;b.onclick=function(){var m=$('wakeMsg');if(!('wakeLock' in navigator)){m.textContent='Kan niet op dit toestel.';return;}navigator.wakeLock.request('screen').then(function(l){lock=l;m.textContent='Scherm blijft aan.';},function(){m.textContent='Niet toegestaan.';});};}
 document.addEventListener('visibilitychange',function(){if(lock&&document.visibilityState==='visible'){try{navigator.wakeLock.request('screen').then(function(l){lock=l;},function(){});}catch(e){}}});
 
-if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}
+if('serviceWorker' in navigator){
+  /* Neemt een nieuwe versie het over, laad dan één keer opnieuw, zodat je nooit de oude ziet */
+  var hadSW=!!navigator.serviceWorker.controller,swReloaded=false;
+  navigator.serviceWorker.addEventListener('controllerchange',function(){if(hadSW&&!swReloaded){swReloaded=true;location.reload();}});
+  window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').then(function(r){r.update();}).catch(function(){});});
+}
 
 render();
 })();
