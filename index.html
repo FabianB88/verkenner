@@ -184,6 +184,7 @@ ol.clues{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
 <div class="wrap">
   <header class="bar">
     <div class="brand">De Verkenner<small id="counter">Groesbeek · Allerheiligenavond</small></div>
+    <button class="icon-btn" id="btnHome" type="button">Begin</button>
     <button class="icon-btn" id="btnMap" type="button">Kaart</button>
     <button class="icon-btn" id="btnRed" type="button" aria-pressed="false">Rood</button>
   </header>
@@ -198,7 +199,7 @@ ol.clues{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
     </div>
     <div class="map" id="map"></div>
     <div class="legend" id="legend" style="margin-top:18px"></div>
-    <p class="footer-note" style="margin-top:16px">Hemelsbreed, noorden boven. De streepjeslijn is de volgorde, niet het pad. Punt 2 ligt ergens in het bos boven de trap. De witte stip zijn jullie, als het live kompas aan staat.</p>
+    <p class="footer-note" style="margin-top:16px">Hemelsbreed, noorden boven. De streepjeslijn is de volgorde, niet het pad. Punt 2 ligt op het pad in het bos, boven de trap. De witte stip zijn jullie, als het live kompas aan staat.</p>
   </div>
 </div>
 
@@ -242,16 +243,20 @@ var STATIONS = [
   ]
 },
 {
-  id:'bos', short:'Het bos', title:'Tussen de stammen', place:'Minstens 150 meter het bos in, boven de trap',
-  lat:null, lng:null, away:150,
-  leg:'Klim de trap op en loop het bos in, tot het stil wordt en de straatlantaarns achter jullie verdwenen zijn. Blijf op het pad. Er is hier geen vaste plek: met het live kompas zie je hoe ver jullie van de trap zijn.',
-  events:[],
+  id:'bos', short:'Het bos', title:'Tussen de stammen', place:'Op het pad, zo’n 120 meter voorbij de bovenste trede',
+  lat:51.78267, lng:5.91900,
+  cache:{from:'Gekrast in de bovenste trede', text:'Boven aan de trap, in het hout van de laatste trede, staan cijfers. Geen jaartal. Een plek. Driek schreef op waar hij zou wachten.'},
+  leg:'Klim de trap op. Boven gaat een onverhard pad naar het zuiden, het bos in. Zoek de plek van de cijfers met de pijl en de afstand. Hij ligt op het pad zelf: verlaat het pad niet, ook niet als de pijl schuin wijst.',
+  events:[
+    {at:0.35, fx:'knock', title:'Van boven', text:['Boven aan de trap houdt het dorp op. Het geluid van de straat wordt dunner, alsof iemand een deur dichtdoet.','Lampen even uit. Kijk omhoog door de takken. Zie je de maan? Dan zag de grenswacht Driek ook.']},
+    {at:0.75, fx:'heartbeat', title:'Zijn pas', text:['Driek telde zijn passen. Honderd passen, stilstaan, luisteren. Honderd passen.','Doe het ook: tel samen tien passen, fluisterend, en sta dan stil. Wie het eerst iets hoort dat niet van jullie is, zegt niets. Alleen een kneepje in de hand.']}
+  ],
   arrive:[
     'Hier was Driek veilig. Zonder licht, want een lamp zie je van een kilometer ver. Hij las het bos met zijn voeten en de lucht met zijn ogen. Het noorden wist hij aan de Poolster, het westen aan de laatste streep licht boven de Mookerheide.',
     'In de voering van zijn pet had hij een kompasroos genaaid. Geen naald, alleen letters. Zijn eigen code.',
     'Maar eerst: doe je lamp uit. Alles uit. Ook dit scherm.'
   ],
-  field:'Druk op De duisternis. Het scherm wordt een minuut helemaal zwart. Gaan staan, hand in hand, en tel wat je hoort. Als het geluid aan staat, luister dan goed. Daarna: open het kompas op je telefoon en wijs allebei naar het oosten. Daar ligt de grens. Daar wachtten de kommiezen.',
+  field:'Druk op De duisternis. Het scherm wordt een minuut helemaal zwart. Gaan staan, hand in hand, en tel wat je hoort. Als het geluid aan staat, luister dan goed. Daarna: kijk op het kompas hieronder en wijs allebei naar de O, het oosten. Daar ligt de grens. Daar wachtten de kommiezen.',
   darkness:true,
   puzzle:{type:'rose', prompt:'Lees de letters van de kompasroos in deze volgorde:',
     clues:['Waar de Wolfsberg ligt, gezien vanaf de Stekkenberg.','Tussen het zuiden en waar de zon ondergaat.','Waar de zon ondergaat.','Halverwege tussen het westen en de Poolster.'],
@@ -446,7 +451,8 @@ function startLive(){
   if(!('geolocation' in navigator)){geo.err='Dit toestel geeft geen locatie.';updateLive();return;}
   if(geo.watch==null){
     geo.watch=navigator.geolocation.watchPosition(function(p){
-      geo.on=true;geo.err=null;geo.pos={lat:p.coords.latitude,lng:p.coords.longitude};geo.acc=p.coords.accuracy;onGeo();
+      geo.on=true;geo.err=null;geo.pos={lat:p.coords.latitude,lng:p.coords.longitude};geo.acc=p.coords.accuracy;
+      gpsCourse(p);onGeo();
     },function(e){geo.err=(e.code===1?'Locatie geweigerd. Zet locatie voor deze site aan in je instellingen.':'Nog geen GPS-fix. Even geduld, of ga onder de bomen vandaan.');updateLive();},
     {enableHighAccuracy:true,maximumAge:2000,timeout:25000});
   }
@@ -454,24 +460,39 @@ function startLive(){
 }
 function startCompass(){
   if(typeof DeviceOrientationEvent==='undefined'){geo.oriMsg='Dit toestel heeft geen kompas';return;}
+  /* Altijd beide luisteren: Android geeft het noorden alleen via 'absolute'. Ook nieuwe Chrome
+     kent requestPermission, dus daaraan kun je een iPhone niet herkennen. */
+  window.addEventListener('deviceorientationabsolute',onOri,true);
+  window.addEventListener('deviceorientation',onOri,true);
   if(typeof DeviceOrientationEvent.requestPermission==='function'){
     var p;
     try{p=DeviceOrientationEvent.requestPermission();}catch(e){p=Promise.reject(e);}
-    p.then(function(r){
-      if(r==='granted'){window.addEventListener('deviceorientation',onOri,true);watchCompass();}
-      else{geo.oriMsg='Kompas geweigerd. Sluit de app helemaal af, open hem opnieuw en kies Sta toe';updateArrow();}
-    },function(){geo.oriMsg='Kompas niet toegestaan. Sluit de app helemaal af en probeer het opnieuw';updateArrow();});
-  }else{
-    window.addEventListener('deviceorientationabsolute',onOri,true);
-    window.addEventListener('deviceorientation',onOri,true);
-    watchCompass();
+    p.then(function(r){if(r!=='granted')geo.oriDenied=true;},function(){geo.oriDenied=true;});
   }
+  watchCompass();
 }
 /* Komt er na een paar seconden nog geen richting binnen, zeg dat dan op het scherm */
 function watchCompass(){
   setTimeout(function(){
-    if(geo.heading==null){geo.oriMsg='Kompas geeft geen richting. Beweeg je telefoon in een 8-vorm, of gebruik je kompas-app';updateArrow();}
+    if(geo.heading!=null)return;
+    geo.oriMsg = geo.oriDenied
+      ? (isIOS()?'Kompas niet toegestaan. Sluit de app helemaal af, open hem opnieuw en kies Sta toe':'Kompas niet toegestaan. Tik op het slotje of ⓘ naast het adres, Rechten, en zet Bewegingssensoren aan')
+      : 'Kompas geeft geen richting. Beweeg je telefoon een paar keer in een 8-vorm';
+    updateArrow();
   },4000);
+}
+/* Zonder kompassensor: de looprichting uit de GPS. Werkt zodra jullie een stukje lopen. */
+var lastFix=null,gpsHead=null,oriAt=0;
+function gpsCourse(p){
+  var c=p.coords,cur={lat:c.latitude,lng:c.longitude};
+  if(typeof c.heading==='number'&&!isNaN(c.heading)&&c.speed>0.6){gpsHead=c.heading;lastFix=cur;return;}
+  if(!lastFix){lastFix=cur;return;}
+  if(dist(lastFix,cur)>=Math.max(8,Math.min(c.accuracy||0,25))){gpsHead=bearing(lastFix,cur);lastFix=cur;}
+}
+function curHeading(){
+  if(geo.heading!=null&&Date.now()-oriAt<3000)return {h:geo.heading,gps:false};
+  if(gpsHead!=null)return {h:gpsHead,gps:true};
+  return null;
 }
 var oriAbs=false;
 function onOri(e){
@@ -481,7 +502,7 @@ function onOri(e){
   else if(e.absolute&&e.alpha!=null&&!oriAbs){h=360-e.alpha;}
   if(h==null)return;
   var sa=(screen.orientation&&typeof screen.orientation.angle==='number')?screen.orientation.angle:(window.orientation||0);
-  geo.heading=(h+sa+360)%360; geo.oriMsg=null;
+  geo.heading=(h+sa+360)%360; geo.oriMsg=null; oriAt=Date.now();
   scheduleArrow();
 }
 var rafPending=false;
@@ -494,15 +515,17 @@ function currentTarget(){
 }
 var lastRot=0;
 function updateArrow(){
-  var t=currentTarget(),g=$('arrowG');if(!t||!g)return;
+  var hd=curHeading();
+  var n=$('northMark'); if(n) n.style.transform='rotate('+(hd?-hd.h:0).toFixed(1)+'deg)';
+  var t=currentTarget(),g=$('arrowG');
+  if(!t||!g){var lm=$('liveMode');if(lm)lm.textContent=hd&&!hd.gps?'De N wijst naar het noorden':(geo.on?'Draai rustig rond: het kompas zoekt het noorden':'Zet het live kompas aan');return;}
   var b;
   if(t.away){ if(!geo.pos)return; b=(bearing(t.from,geo.pos)); }
   else { var from=geo.pos||t.from; b=bearing(from,t.pt); }
-  var rot = geo.heading!=null ? b-geo.heading : b;
+  var rot = hd ? b-hd.h : b;
   var diff=((rot-lastRot)%360+540)%360-180; lastRot+=diff;
   g.style.transform='rotate('+lastRot.toFixed(1)+'deg)';
-  var lab=$('liveMode'); if(lab) lab.textContent = geo.heading!=null ? 'Pijl draait mee met je telefoon' : (geo.oriMsg ? geo.oriMsg+'. Tot dan: houd de N naar het noorden' : 'Geen kompas: houd de N van je kompas-app naar het noorden');
-  var n=$('northMark'); if(n) n.style.transform='rotate('+(geo.heading!=null?-geo.heading:0).toFixed(1)+'deg)';
+  var lab=$('liveMode'); if(lab) lab.textContent = !hd ? (geo.on ? (geo.oriMsg?geo.oriMsg+'. ':'')+'Loop een stukje: dan draait de pijl mee met jullie looprichting' : '') : hd.gps ? 'Pijl volgt jullie looprichting. Houd de telefoon recht voor je uit en blijf lopen' : 'Pijl draait mee met je telefoon';
 }
 function onGeo(){updateLive();checkEvents();}
 function updateLive(){
@@ -665,17 +688,30 @@ function renderStart(){
   wireWake();
 }
 
-function liveBlock(){
-  return '<div class="live" aria-live="polite">'+
-    '<svg viewBox="0 0 240 240" aria-hidden="true">'+
-      '<g id="northMark" style="transform-origin:120px 120px">'+
+function roseG(){
+  return '<g id="northMark" style="transform-origin:120px 120px">'+
         '<circle cx="120" cy="120" r="108" fill="none" stroke="var(--moss)" stroke-width="2"/>'+
         '<circle cx="120" cy="120" r="84" fill="none" stroke="var(--moss)" stroke-width="1" stroke-dasharray="2 6"/>'+
         '<text x="120" y="30" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="14" fill="var(--mist-dim)">N</text>'+
         '<text x="216" y="125" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--mist-dim)">O</text>'+
         '<text x="120" y="222" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--mist-dim)">Z</text>'+
         '<text x="24" y="125" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--mist-dim)">W</text>'+
-      '</g>'+
+      '</g>';
+}
+/* Alleen de kompasroos, voor plekken zonder doel (zoals: wijs naar het oosten) */
+function compassBlock(){
+  return '<div class="live">'+
+    '<svg viewBox="0 0 240 240" aria-hidden="true">'+roseG()+
+      '<path d="M120 40 L128 120 L112 120 Z" fill="var(--lantern)" opacity=".35"/>'+
+      '<circle cx="120" cy="120" r="5" fill="var(--mist)"/>'+
+    '</svg>'+
+    '<div class="sub" id="liveMode" style="font-size:12px"></div>'+
+    '<div class="row" style="justify-content:center">'+liveToggle()+'</div>'+
+  '</div>';
+}
+function liveBlock(){
+  return '<div class="live" aria-live="polite">'+
+    '<svg viewBox="0 0 240 240" aria-hidden="true">'+roseG()+
       '<g id="arrowG" style="transform-origin:120px 120px">'+
         '<path d="M120 26 L142 128 L120 114 L98 128 Z" fill="var(--lantern)"/>'+
         '<path d="M120 206 L132 132 L120 140 L108 132 Z" fill="var(--moss)"/>'+
@@ -690,6 +726,13 @@ function liveBlock(){
   '</div>';
 }
 
+/* Coördinaat als zoektocht: graden en minuten, zoals op een oude kaart */
+function dmm(v,pos,neg){var a=Math.abs(v),d=Math.floor(a),m=(a-d)*60;return (v>=0?pos:neg)+' '+d+'° '+m.toFixed(3)+'′';}
+function cacheBlock(s){
+  return '<div class="block"><p class="eyebrow">'+esc(s.cache.from)+'</p>'+
+    '<p class="dim" style="font-size:14.5px">'+esc(s.cache.text)+'</p>'+
+    '<p class="mono" style="font-size:20px;letter-spacing:.04em;margin-top:10px">'+dmm(s.lat,'N','Z')+'<br>'+dmm(s.lng,'O','W')+'</p></div>';
+}
 function staticNav(from,to){
   var b=bearing(from,to),d=dist(from,to),k=idx16(b);
   var coord=to.lat.toFixed(5)+', '+to.lng.toFixed(5);
@@ -729,6 +772,7 @@ function renderLeg(){
   currentSealEvents=s.events; currentSealKey=key;
   view.innerHTML='<div class="stack">'+
     '<div><p class="eyebrow">Op weg naar teken '+(state.i+1)+' van 6</p><h2 style="margin-top:8px">'+esc(s.title)+'</h2><p class="dim" style="margin-top:6px">'+esc(s.place)+'</p></div>'+
+    (s.cache?cacheBlock(s):'')+
     liveBlock()+
     '<div class="prose"><p>'+esc(s.leg)+'</p></div>'+
     sealsHtml(key,s.events)+
@@ -800,7 +844,7 @@ function renderSite(){
     '<div><p class="eyebrow">Teken '+(state.i+1)+' van 6 · '+esc(s.short)+'</p><h2 style="margin-top:8px">'+esc(s.title)+'</h2></div>'+
     '<div class="prose">'+paras(s.arrive)+'</div>'+
     '<p class="field">'+esc(s.field)+'</p>'+
-    (s.darkness?'<div class="row"><button class="btn" id="darkBtn" type="button">De duisternis</button></div>':'')+
+    (s.darkness?'<div class="row"><button class="btn" id="darkBtn" type="button">De duisternis</button></div>'+compassBlock():'')+
     puzzleHtml+
     '<div id="relicSlot">'+(solved?relicCard(s,state.i,false):'')+'</div>'+
     '<details class="fact"'+(s.kroniekOpen?' open':'')+'><summary class="eyebrow" style="color:var(--mist-dim)">Uit de dorpskroniek</summary><div class="prose" style="gap:10px;margin-top:10px">'+paras(s.kroniek)+'</div></details>'+
@@ -811,6 +855,7 @@ function renderSite(){
   $('back').onclick=function(){state.pos='leg';save();render();};
   $('next').onclick=function(){if(isLast)state.pos='home';else{state.i++;state.pos='leg';}save();render();};
   var db=$('darkBtn');if(db)db.onclick=darkness;
+  wireLiveToggle(); updateArrow();
   var pk=$('playKnock');if(pk)pk.onclick=function(){playKnocks(p.seq);};
   if(solved)return;
   var msg=$('msg');
@@ -895,6 +940,7 @@ function renderMap(){
 }
 
 $('btnRed').onclick=function(){state.red=!state.red;save();document.documentElement.setAttribute('data-licht',state.red?'rood':'nacht');this.setAttribute('aria-pressed',state.red?'true':'false');};
+$('btnHome').onclick=function(){if(state.pos!=='start'){state.resumePos=state.pos;state.pos='start';save();}render();};
 $('btnMap').onclick=function(){renderMap();$('sheet').hidden=false;};
 $('btnClose').onclick=function(){$('sheet').hidden=true;};
 
