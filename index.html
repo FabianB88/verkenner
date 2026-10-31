@@ -437,9 +437,11 @@ function fx(kind){
 }
 
 /* ---------- Live kompas en GPS ---------- */
-var geo={pos:null,acc:null,heading:null,on:false,err:null,watch:null};
+var geo={pos:null,acc:null,heading:null,on:false,err:null,watch:null,oriMsg:null};
 var arrivedFor=null;
 function startLive(){
+  /* Eerst het kompas: iPhone staat de vraag alleen toe als die direct op de tik volgt */
+  startCompass();
   ac();
   if(!('geolocation' in navigator)){geo.err='Dit toestel geeft geen locatie.';updateLive();return;}
   if(geo.watch==null){
@@ -448,25 +450,38 @@ function startLive(){
     },function(e){geo.err=(e.code===1?'Locatie geweigerd. Zet locatie voor deze site aan in je instellingen.':'Nog geen GPS-fix. Even geduld, of ga onder de bomen vandaan.');updateLive();},
     {enableHighAccuracy:true,maximumAge:2000,timeout:25000});
   }
-  try{
-    if(typeof DeviceOrientationEvent!=='undefined' && typeof DeviceOrientationEvent.requestPermission==='function'){
-      DeviceOrientationEvent.requestPermission().then(function(r){if(r==='granted')window.addEventListener('deviceorientation',onOri,true);}).catch(function(){});
-    }else{
-      window.addEventListener('deviceorientationabsolute',onOri,true);
-      window.addEventListener('deviceorientation',onOri,true);
-    }
-  }catch(e){}
   geo.on=true;updateLive();
+}
+function startCompass(){
+  if(typeof DeviceOrientationEvent==='undefined'){geo.oriMsg='Dit toestel heeft geen kompas';return;}
+  if(typeof DeviceOrientationEvent.requestPermission==='function'){
+    var p;
+    try{p=DeviceOrientationEvent.requestPermission();}catch(e){p=Promise.reject(e);}
+    p.then(function(r){
+      if(r==='granted'){window.addEventListener('deviceorientation',onOri,true);watchCompass();}
+      else{geo.oriMsg='Kompas geweigerd. Sluit de app helemaal af, open hem opnieuw en kies Sta toe';updateArrow();}
+    },function(){geo.oriMsg='Kompas niet toegestaan. Sluit de app helemaal af en probeer het opnieuw';updateArrow();});
+  }else{
+    window.addEventListener('deviceorientationabsolute',onOri,true);
+    window.addEventListener('deviceorientation',onOri,true);
+    watchCompass();
+  }
+}
+/* Komt er na een paar seconden nog geen richting binnen, zeg dat dan op het scherm */
+function watchCompass(){
+  setTimeout(function(){
+    if(geo.heading==null){geo.oriMsg='Kompas geeft geen richting. Beweeg je telefoon in een 8-vorm, of gebruik je kompas-app';updateArrow();}
+  },4000);
 }
 var oriAbs=false;
 function onOri(e){
   var h=null;
-  if(typeof e.webkitCompassHeading==='number'&&!isNaN(e.webkitCompassHeading)){h=e.webkitCompassHeading;}
+  if(typeof e.webkitCompassHeading==='number'&&!isNaN(e.webkitCompassHeading)&&e.webkitCompassHeading>=0){h=e.webkitCompassHeading;}
   else if(e.type==='deviceorientationabsolute'&&e.alpha!=null){h=360-e.alpha;oriAbs=true;}
   else if(e.absolute&&e.alpha!=null&&!oriAbs){h=360-e.alpha;}
   if(h==null)return;
   var sa=(screen.orientation&&typeof screen.orientation.angle==='number')?screen.orientation.angle:(window.orientation||0);
-  geo.heading=(h+sa+360)%360;
+  geo.heading=(h+sa+360)%360; geo.oriMsg=null;
   scheduleArrow();
 }
 var rafPending=false;
@@ -486,7 +501,7 @@ function updateArrow(){
   var rot = geo.heading!=null ? b-geo.heading : b;
   var diff=((rot-lastRot)%360+540)%360-180; lastRot+=diff;
   g.style.transform='rotate('+lastRot.toFixed(1)+'deg)';
-  var lab=$('liveMode'); if(lab) lab.textContent = geo.heading!=null ? 'Pijl draait mee met je telefoon' : 'Geen kompas: houd de N van je kompas-app naar het noorden';
+  var lab=$('liveMode'); if(lab) lab.textContent = geo.heading!=null ? 'Pijl draait mee met je telefoon' : (geo.oriMsg ? geo.oriMsg+'. Tot dan: houd de N naar het noorden' : 'Geen kompas: houd de N van je kompas-app naar het noorden');
   var n=$('northMark'); if(n) n.style.transform='rotate('+(geo.heading!=null?-geo.heading:0).toFixed(1)+'deg)';
 }
 function onGeo(){updateLive();checkEvents();}
